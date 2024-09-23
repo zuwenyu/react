@@ -272,8 +272,8 @@ __DEV__ &&
             -1 < x.stack.indexOf("\n    at")
               ? " (<anonymous>)"
               : -1 < x.stack.indexOf("@")
-              ? "@unknown:0:0"
-              : "";
+                ? "@unknown:0:0"
+                : "";
         }
       return "\n" + prefix + name + suffix;
     }
@@ -657,13 +657,15 @@ __DEV__ &&
         null === type
           ? (isStaticChildren = "null")
           : isArrayImpl(type)
-          ? (isStaticChildren = "array")
-          : void 0 !== type && type.$$typeof === REACT_ELEMENT_TYPE
-          ? ((isStaticChildren =
-              "<" + (getComponentNameFromType(type.type) || "Unknown") + " />"),
-            (children =
-              " Did you accidentally export a JSX literal instead of a component?"))
-          : (isStaticChildren = typeof type);
+            ? (isStaticChildren = "array")
+            : void 0 !== type && type.$$typeof === REACT_ELEMENT_TYPE
+              ? ((isStaticChildren =
+                  "<" +
+                  (getComponentNameFromType(type.type) || "Unknown") +
+                  " />"),
+                (children =
+                  " Did you accidentally export a JSX literal instead of a component?"))
+              : (isStaticChildren = typeof type);
         error$jscomp$0(
           "React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: %s.%s",
           isStaticChildren,
@@ -697,11 +699,7 @@ __DEV__ &&
       hasValidKey(config) &&
         (checkKeyStringCoercion(config.key), (children = "" + config.key));
       hasValidRef(config) && warnIfStringRefCannotBeAutoConverted(config, self);
-      if (
-        (!enableFastJSXWithoutStringRefs &&
-          (!enableFastJSXWithStringRefs || "ref" in config)) ||
-        "key" in config
-      ) {
+      if ("ref" in config || "key" in config) {
         maybeKey = {};
         for (var propName in config)
           "key" !== propName &&
@@ -1199,7 +1197,6 @@ __DEV__ &&
       disableDefaultPropsExceptForClasses =
         dynamicFeatureFlags.disableDefaultPropsExceptForClasses,
       enableDebugTracing = dynamicFeatureFlags.enableDebugTracing,
-      enableFastJSX = dynamicFeatureFlags.enableFastJSX,
       enableRenderableContext = dynamicFeatureFlags.enableRenderableContext,
       enableTransitionTracing = dynamicFeatureFlags.enableTransitionTracing,
       renameElementSymbol = dynamicFeatureFlags.renameElementSymbol,
@@ -1315,9 +1312,7 @@ __DEV__ &&
       didWarnAboutOldJSXRuntime;
     var didWarnAboutStringRefs = {};
     var didWarnAboutElementRef = {};
-    var enableFastJSXWithStringRefs = enableFastJSX && !0,
-      enableFastJSXWithoutStringRefs = enableFastJSXWithStringRefs && !1,
-      didWarnAboutKeySpread = {},
+    var didWarnAboutKeySpread = {},
       ownerHasKeyUseWarning = {},
       didWarnAboutMaps = !1,
       userProvidedKeyEscapeRegex = /\/+/g,
@@ -1668,13 +1663,13 @@ __DEV__ &&
           isArrayImpl(type)
             ? (typeString = "array")
             : void 0 !== type && type.$$typeof === REACT_ELEMENT_TYPE
-            ? ((typeString =
-                "<" +
-                (getComponentNameFromType(type.type) || "Unknown") +
-                " />"),
-              (i =
-                " Did you accidentally export a JSX literal instead of a component?"))
-            : (typeString = typeof type);
+              ? ((typeString =
+                  "<" +
+                  (getComponentNameFromType(type.type) || "Unknown") +
+                  " />"),
+                (i =
+                  " Did you accidentally export a JSX literal instead of a component?"))
+              : (typeString = typeof type);
         error$jscomp$0(
           "React.createElement: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: %s.%s",
           typeString,
@@ -1749,18 +1744,18 @@ __DEV__ &&
             "forwardRef requires a render function but received a `memo` component. Instead of forwardRef(memo(...)), use memo(forwardRef(...))."
           )
         : "function" !== typeof render
-        ? error$jscomp$0(
-            "forwardRef requires a render function but was given %s.",
-            null === render ? "null" : typeof render
-          )
-        : 0 !== render.length &&
-          2 !== render.length &&
-          error$jscomp$0(
-            "forwardRef render functions accept exactly two parameters: props and ref. %s",
-            1 === render.length
-              ? "Did you forget to use the ref parameter?"
-              : "Any additional parameter will be undefined."
-          );
+          ? error$jscomp$0(
+              "forwardRef requires a render function but was given %s.",
+              null === render ? "null" : typeof render
+            )
+          : 0 !== render.length &&
+            2 !== render.length &&
+            error$jscomp$0(
+              "forwardRef render functions accept exactly two parameters: props and ref. %s",
+              1 === render.length
+                ? "Did you forget to use the ref parameter?"
+                : "Any additional parameter will be undefined."
+            );
       null != render &&
         null != render.defaultProps &&
         error$jscomp$0(
@@ -1859,20 +1854,19 @@ __DEV__ &&
     };
     exports.startTransition = function (scope, options) {
       var prevTransition = ReactSharedInternals.T,
-        transition = {};
-      ReactSharedInternals.T = transition;
-      var currentTransition = ReactSharedInternals.T;
-      ReactSharedInternals.T._updatedFibers = new Set();
+        currentTransition = {};
+      ReactSharedInternals.T = currentTransition;
+      currentTransition._updatedFibers = new Set();
       enableTransitionTracing &&
         void 0 !== options &&
         void 0 !== options.name &&
-        ((ReactSharedInternals.T.name = options.name),
-        (ReactSharedInternals.T.startTime = -1));
+        ((currentTransition.name = options.name),
+        (currentTransition.startTime = -1));
       try {
         var returnValue = scope(),
           onStartTransitionFinish = ReactSharedInternals.S;
         null !== onStartTransitionFinish &&
-          onStartTransitionFinish(transition, returnValue);
+          onStartTransitionFinish(currentTransition, returnValue);
         "object" === typeof returnValue &&
           null !== returnValue &&
           "function" === typeof returnValue.then &&
@@ -1905,6 +1899,14 @@ __DEV__ &&
     };
     exports.unstable_useCacheRefresh = function () {
       return resolveDispatcher().useCacheRefresh();
+    };
+    exports.unstable_useContextWithBailout = function (context, select) {
+      var dispatcher = resolveDispatcher();
+      context.$$typeof === REACT_CONSUMER_TYPE &&
+        error$jscomp$0(
+          "Calling useContext(Context.Consumer) is not supported and will cause bugs. Did you mean to call useContext(Context) instead?"
+        );
+      return dispatcher.unstable_useContextWithBailout(context, select);
     };
     exports.unstable_useMemoCache = useMemoCache;
     exports.use = function (usable) {
@@ -1978,7 +1980,7 @@ __DEV__ &&
     exports.useTransition = function () {
       return resolveDispatcher().useTransition();
     };
-    exports.version = "19.0.0-www-modern-01172397-20240716";
+    exports.version = "19.0.0-www-modern-d4688dfa-20240920";
     "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
       "function" ===
         typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop &&
